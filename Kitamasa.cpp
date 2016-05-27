@@ -1,9 +1,10 @@
-#include<vector>
-#include<algorithm>
-#include<assert.h>
-#include<iostream>
-using namespace std;
+//Typical DP Contest T 「フィボナッチ」をverify
+//http://tdpc.contest.atcoder.jp/tasks/tdpc_fibonacci
 
+
+//普通
+//O(N^3+N^2log(K))
+//漸化式の定数項が全て1のとき、
 //O(N^2log(K))   
 //N:漸化式の項数
 //K:もとめる項
@@ -26,22 +27,40 @@ struct Kitamasa {
 public:
 
 	//漸化式 an = zenka[0] * an-k+1 + zenka[1] * an-k+2 + zenka[2] * an-k+3 + ......zenka[k-1]*an-1
-	Kitamasa(const vector<int>&zenka) :z_size(zenka.size()), terms(2 * z_size-1, vector<T>(z_size)) {
+	Kitamasa(const vector<T>&zenka) :z_size(zenka.size()), terms(2 * z_size - 1, vector<T>(z_size)) {
 		for (int i = 0; i < z_size; ++i) {
 			vector<T>a(z_size, static_cast<T>(0));
 			a[i] = static_cast<T>(1);
 			terms[i] = (a);
 		}
 
-		for (int i = z_size; i < 2 * z_size-1; ++i) {
-			for (int j = 0; j < z_size;++j){
-				for (int k = 0; k < z_size;++k){
-					terms[i][j] += zenka[k]*terms[i-z_size+k][j];
+
+
+		if (all_of(zenka.begin(), zenka.end(), [](const T&t) {return t == static_cast<T>(1); })) {
+			//(N^2)
+			vector<T>plus(z_size, 1);
+			for (int i = z_size; i < 2 * z_size - 1; ++i) {
+				if (i != z_size) {
+					for (int j = 0; j <z_size; ++j) {
+						plus[j] += plus[j];
+					}
+					plus[i - z_size - 1] -= 1;
+				}
+				terms[i] = (plus);
+			}
+
+		}
+		else {
+			//(N^3)
+			for (int i = z_size; i < 2 * z_size - 1; ++i) {
+				for (int j = 0; j < z_size; ++j) {
+					for (int k = 0; k < z_size; ++k) {
+						terms[i][j] += zenka[k] * terms[i - z_size + k][j];
+					}
 				}
 			}
 		}
 	}
-
 
 	//第num項を求める
 	//
@@ -50,7 +69,7 @@ public:
 	//fst_terms 初項
 	//fst_terms={a0,a1,a2,.......ak-1}
 	//num:求める項数
-	T solve(const vector<T>&fst_terms,const long long int num) {
+	T solve(const vector<T>&fst_terms, const long long int num) {
 		assert(fst_terms.size() == z_size);
 		vector<T>v(getterm(num));
 		T ans(0);
@@ -60,11 +79,10 @@ public:
 		return ans;
 	}
 
-
 private:
 
 	vector<T>getterm(const long long int num) {
-		if (num < static_cast<long long int >(z_size * 2-1)) {
+		if (num < static_cast<long long int >(z_size * 2 - 1)) {
 			return terms[static_cast<int >(num)];
 		}
 		if (num % 2) {
@@ -83,7 +101,7 @@ private:
 				ans[j + k] += f[j] * f[k];
 			}
 		}
-		for (int j = 0; j < z_size * 2-1; ++j) {
+		for (int j = 0; j < z_size * 2 - 1; ++j) {
 			for (int k = 0; k < z_size; ++k) {
 				to[k] += ans[j] * terms[j][k];
 			}
